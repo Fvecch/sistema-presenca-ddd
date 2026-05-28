@@ -56,7 +56,7 @@ class CreateClassLogRequest(BaseModel):
     """
     course_id:       UUID
     class_date:      date
-    attendance_list: dict[UUID, int]  # student_id -> status (0, 1 ou 2)
+    attendance_list: dict[UUID, int] 
 
 
 class JustifyAbsenceRequest(BaseModel):
