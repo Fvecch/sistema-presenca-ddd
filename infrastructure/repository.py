@@ -149,3 +149,39 @@ class ClassLogRepository:
             conn.commit()
         finally:
             conn.close()
+
+    def update_class_log(self, class_log_id: UUID, course_id: UUID, class_date) -> bool:
+        """Atualiza os dados principais de um ClassLog (course_id e class_date).
+        Retorna True se encontrou e atualizou, False se não encontrou."""
+        conn = get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """UPDATE class_logs
+                       SET course_id = %s, class_date = %s
+                       WHERE id = %s""",
+                    (str(course_id), class_date, str(class_log_id))
+                )
+                updated = cur.rowcount > 0
+            conn.commit()
+            return updated
+        finally:
+            conn.close()
+
+    def update_attendance_record(self, class_log_id: UUID, student_id: UUID, status: int) -> bool:
+        """Atualiza o status de presença de um aluno específico.
+        Retorna True se encontrou e atualizou, False se não encontrou."""
+        conn = get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """UPDATE attendance_records
+                       SET status = %s
+                       WHERE class_log_id = %s AND student_id = %s""",
+                    (status, str(class_log_id), str(student_id))
+                )
+                updated = cur.rowcount > 0
+            conn.commit()
+            return updated
+        finally:
+            conn.close()
