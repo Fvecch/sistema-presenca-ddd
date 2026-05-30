@@ -10,22 +10,45 @@ Endpoints disponíveis:
 - POST   /api/class-logs/{id}/justify              → Justificar falta
 - PUT    /api/class-logs/{id}/records/{student_id} → Atualizar status
 - DELETE /api/class-logs/{id}/records/{student_id} → Remover aluno
+
+- POST   /api/courses                              → Criar curso
+- GET    /api/courses                              → Listar cursos
+- DELETE /api/courses/{id}                         → Deletar curso
+
+- POST   /api/students                             → Criar aluno
+- GET    /api/students?course_id={uuid}            → Listar alunos
+- DELETE /api/students/{id}                        → Deletar aluno
 """
 
 from datetime import date
 from uuid import UUID
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from domain.entities import AttendanceStatus, ClassLog
 from infrastructure.repository import ClassLogRepository, create_tables
+from infrastructure.catalog_repository import create_catalog_tables
+from api.catalog_routes import router as catalog_router
 
 app = FastAPI(
     title="Sistema de Presença Escolar",
     description="API para controle de frequência com arquitetura DDD — feita em Python/FastAPI.",
-    version="2.0.0"
+    version="3.0.0"
 )
+
+# ── CORS — permite o front acessar a API ──────────────────────────────────────
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # em produção, substituir pelo domínio do front
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ── Registra as rotas do catálogo ─────────────────────────────────────────────
+app.include_router(catalog_router)
 
 repository = ClassLogRepository()
 
@@ -33,6 +56,7 @@ repository = ClassLogRepository()
 @app.on_event("startup")
 def startup():
     create_tables()
+    create_catalog_tables()
 
 
 # ── Schemas ───────────────────────────────────────────────────────────────────
